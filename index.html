@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LINE Message Manager</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00b900;
+            --primary-dark: #008c00;
+            --secondary: #f0f0f0;
+            --text-dark: #111;
+            --text-light: #666;
+            --border-color: #e0e0e0;
+            --success: #34a853;
+            --error: #ea4335;
+            --warning: #fbbc04;
+            --info: #4285f4;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            background: white;
+            border-bottom-color: var(--primary);
+        }
+
+        .tab:hover:not(.active) {
+            background: #efefef;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            animation: slideUp 0.5s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 185, 0, 0.1);
+        }
+
+        .field-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .field-container.single {
+            grid-template-columns: 1fr;
+        }
+
+        .field-container.quad {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .input-wrapper {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-wrapper label {
+            margin-bottom: 6px;
+            font-size: 12px;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--secondary);
+        }
+
+        button {
+            padding: 14px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0, 185, 0, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0, 185, 0, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: var(--text-dark);
+            border: 2px solid var(--border-color);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #efefef;
+            border-color: var(--text-dark);
+        }
+
+        .btn-danger {
+            background: #fef2f2;
+            color: var(--error);
+            border: 2px solid var(--error);
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: var(--error);
+            color: white;
+        }
+
+        .btn-info {
+            background: #eef4fd;
+            color: var(--info);
+            border: 2px solid var(--info);
+        }
+
+        .btn-info:hover:not(:disabled) {
+            background: var(--info);
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .message-preview {
+            background: var(--secondary);
+            border-left: 4px solid var(--primary);
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: var(--text-dark);
+            max-height: 200px;
+            overflow-y: auto;
+            word-break: break-all;
+        }
+
+        .field-fade {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 6px;
+        }
+
+        .emoji {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        /* Message List Styles */
+        .message-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .message-card {
+            background: white;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .message-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(0, 185, 0, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .message-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .message-type-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--primary);
+            color: white;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .message-status {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .message-status.sent {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .message-time {
+            font-size: 11px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+
+        .message-data {
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            background: #f9f9f9;
+            padding: 8px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+            max-height: 80px;
+            overflow: hidden;
+            word-break: break-all;
+            color: var(--text-light);
+        }
+
+        .message-actions {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+        }
+
+        .message-actions button {
+            padding: 8px 12px;
+            font-size: 11px;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+
+        .empty-state .emoji {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .loading-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .toolbar h2 {
+            font-size: 18px;
+            color: var(--text-dark);
+        }
+
+        .toolbar-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .toolbar-buttons button {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Message Manager</h1>
+            <p>สร้าง แก้ไข และส่ง LINE Message</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <div class="tab active" data-tab="create">➕ สร้างใหม่</div>
+            <div class="tab" data-tab="manage">📋 จัดการ</div>
+        </div>
+
+        <!-- Create Tab -->
+        <div id="createTab" class="content">
+            <form id="messageForm">
+                <input type="hidden" id="editingId" value="">
+                
+                <div class="form-group">
+                    <label for="messageType"><span class="emoji">📋</span>ประเภท Message</label>
+                    <select id="messageType" required>
+                        <option value="">-- เลือกประเภท --</option>
+                        <option value="text">Text Message</option>
+                        <option value="sticker">Sticker Message</option>
+                        <option value="image">Image Message</option>
+                        <option value="video">Video Message</option>
+                        <option value="audio">Audio Message</option>
+                        <option value="location">Location Message</option>
+                        <option value="template">Template Message</option>
+                        <option value="flex">Flex Message</option>
+                    </select>
+                </div>
+
+                <div id="textFields" class="form-group hidden field-fade">
+                    <div class="field-container single">
+                        <div class="input-wrapper">
+                            <label for="textMessage">📝 ข้อความ</label>
+                            <input type="text" id="textMessage" placeholder="พิมพ์ข้อความของคุณ">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="stickerFields" class="form-group hidden field-fade">
+                    <div class="field-container">
+                        <div class="input-wrapper">
+                            <label for="stickerId">🎫 Sticker ID</label>
+                            <input type="text" id="stickerId" placeholder="เช่น 1">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="packageId">📦 Package ID</label>
+                            <input type="text" id="packageId" placeholder="เช่น 789">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="imageFields" class="form-group hidden field-fade">
+                    <div class="field-container">
+                        <div class="input-wrapper">
+                            <label for="imageUrl">🖼️ รูปภาพ URL</label>
+                            <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="imageThumbnail">📸 Thumbnail URL</label>
+                            <input type="url" id="imageThumbnail" placeholder="https://example.com/thumb.jpg">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="videoFields" class="form-group hidden field-fade">
+                    <div class="field-container">
+                        <div class="input-wrapper">
+                            <label for="videoUrl">🎬 วิดีโอ URL</label>
+                            <input type="url" id="videoUrl" placeholder="https://example.com/video.mp4">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="videoThumbnail">📸 Thumbnail URL</label>
+                            <input type="url" id="videoThumbnail" placeholder="https://example.com/thumb.jpg">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="audioFields" class="form-group hidden field-fade">
+                    <div class="field-container">
+                        <div class="input-wrapper">
+                            <label for="audioUrl">🎵 Audio URL</label>
+                            <input type="url" id="audioUrl" placeholder="https://example.com/audio.m4a">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="audioDuration">⏱️ ระยะเวลา (ms)</label>
+                            <input type="number" id="audioDuration" placeholder="5000">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="locationFields" class="form-group hidden field-fade">
+                    <div class="field-container quad">
+                        <div class="input-wrapper">
+                            <label for="locationTitle">📍 ชื่อที่ตั้ง</label>
+                            <input type="text" id="locationTitle" placeholder="เช่น Bangkok">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="locationAddress">🏢 ที่อยู่</label>
+                            <input type="text" id="locationAddress" placeholder="เช่น 123 Sukhumvit">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="locationLatitude">🌍 Latitude</label>
+                            <input type="number" id="locationLatitude" placeholder="13.7563" step="0.0001">
+                        </div>
+                        <div class="input-wrapper">
+                            <label for="locationLongitude">🌍 Longitude</label>
+                            <input type="number" id="locationLongitude" placeholder="100.5018" step="0.0001">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="templateFields" class="form-group hidden field-fade">
+                    <div class="field-container single">
+                        <div class="input-wrapper">
+                            <label for="templateJson">📋 Template JSON</label>
+                            <input type="text" id="templateJson" placeholder='{"type":"buttons",...}'>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="flexFields" class="form-group hidden field-fade">
+                    <div class="field-container single">
+                        <div class="input-wrapper">
+                            <label for="flexJson">📋 Flex JSON</label>
+                            <input type="text" id="flexJson" placeholder='{"type":"bubble",...}'>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="messagePreview" class="message-preview hidden"></div>
+
+                <div class="button-group" id="normalActions">
+                    <button type="button" class="btn-secondary" id="saveBtn">
+                        💾 บันทึก
+                    </button>
+                    <button type="button" class="btn-primary" id="sendBtn">
+                        ✈️ ส่ง
+                    </button>
+                </div>
+
+                <div class="button-group hidden" id="editActions" style="margin-top: 12px;">
+                    <button type="button" class="btn-secondary" id="cancelEditBtn">
+                        ❌ ยกเลิก
+                    </button>
+                    <button type="button" class="btn-info" id="updateBtn">
+                        ✏️ อัปเดต
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Manage Tab -->
+        <div id="manageTab" class="content hidden">
+            <div class="toolbar">
+                <h2>📋 รายการ Messages</h2>
+                <div class="toolbar-buttons">
+                    <button class="btn-secondary" id="refreshBtn">🔄 Refresh</button>
+                    <button class="btn-info" id="downloadBtn">📥 CSV</button>
+                </div>
+            </div>
+            
+            <div id="messageList" class="message-list">
+                <div class="loading-state">
+                    <div class="spinner"></div>
+                    <p style="margin-top: 16px; color: var(--text-light);">กำลังโหลด...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const LIFF_ID = '2009972042-eJG257dC';
+        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxnK8ZvlR3d9KesaWxDiqRmHsRtkaQK5ENxLxTnfUfUsHAxPNxni8rl2YwAD606SQ26VQ/exec';
+
+        let liffInitialized = false;
+        let liffError = false;
+        let allMessages = [];
+
+        // ========================================
+        // LIFF SDK Loading
+        // ========================================
+        function loadLiffSDK() {
+            return new Promise((resolve, reject) => {
+                if (typeof liff !== 'undefined') {
+                    resolve();
+                    return;
+                }
+
+                console.log('⏳ กำลังโหลด LIFF SDK...');
+                const script = document.createElement('script');
+                script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+                script.charset = 'utf-8';
+                
+                const timeoutId = setTimeout(() => {
+                    reject(new Error('LIFF SDK load timeout (15s)'));
+                }, 15000);
+
+                script.onload = () => {
+                    clearTimeout(timeoutId);
+                    console.log('✓ LIFF SDK loaded');
+                    resolve();
+                };
+
+                script.onerror = () => {
+                    clearTimeout(timeoutId);
+                    reject(new Error('Failed to load LIFF SDK'));
+                };
+
+                document.head.appendChild(script);
+            });
+        }
+
+        async function initializeLIFF() {
+            try {
+                await loadLiffSDK();
+
+                if (typeof liff === 'undefined') {
+                    throw new Error('LIFF SDK loaded but liff object is undefined');
+                }
+
+                await liff.init({ liffId: LIFF_ID });
+                liffInitialized = true;
+                console.log('✓ LIFF initialized successfully');
+
+                const isInClient = liff.isInClient();
+                const isLoggedIn = liff.isLoggedIn();
+                
+                console.log('Environment:', isInClient ? '📱 LINE App' : '🌐 External Browser');
+                console.log('Login status:', isLoggedIn ? '✓ Logged in' : '⚠ Not logged in');
+
+                if (!isInClient && !isLoggedIn) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'กรุณาเข้าสู่ระบบ LINE',
+                        text: 'คุณจะถูกนำไปยังหน้า LINE Login',
+                        showCancelButton: true,
+                        confirmButtonText: 'เข้าสู่ระบบ',
+                        cancelButtonText: 'ยกเลิก',
+                        allowOutsideClick: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            liff.login({ redirectUri: window.location.href });
+                        }
+                    });
+                }
+            } catch (error) {
+                liffError = true;
+                console.error('❌ LIFF initialization error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: error.message,
+                    confirmButtonText: 'Refresh'
+                }).then(result => {
+                    if (result.isConfirmed) location.reload();
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeLIFF);
+        } else {
+            initializeLIFF();
+        }
+
+        // ========================================
+        // Tab Navigation
+        // ========================================
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabName = tab.dataset.tab;
+                
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                document.getElementById('createTab').classList.add('hidden');
+                document.getElementById('manageTab').classList.add('hidden');
+                document.getElementById(tabName + 'Tab').classList.remove('hidden');
+                
+                if (tabName === 'manage') {
+                    loadMessages();
+                }
+            });
+        });
+
+        // ========================================
+        // Form Handling
+        // ========================================
+        const messageTypeSelect = document.getElementById('messageType');
+        const messagePreview = document.getElementById('messagePreview');
+
+        messageTypeSelect.addEventListener('change', (e) => {
+            updateFieldVisibility(e.target.value);
+            updateMessagePreview();
+        });
+
+        function updateFieldVisibility(type) {
+            document.querySelectorAll('[id$="Fields"]').forEach(el => {
+                el.classList.add('hidden');
+            });
+
+            if (type) {
+                const fieldId = `${type}Fields`;
+                document.getElementById(fieldId)?.classList.remove('hidden');
+                messagePreview.classList.remove('hidden');
+            } else {
+                messagePreview.classList.add('hidden');
+            }
+        }
+
+        function updateMessagePreview() {
+            const type = messageTypeSelect.value;
+            let message = {};
+
+            try {
+                switch(type) {
+                    case 'text':
+                        message = { type: 'text', text: document.getElementById('textMessage').value || '[ยังไม่ได้กรอก]' };
+                        break;
+                    case 'sticker':
+                        message = {
+                            type: 'sticker',
+                            stickerId: document.getElementById('stickerId').value || '1',
+                            packageId: document.getElementById('packageId').value || '1'
+                        };
+                        break;
+                    case 'image':
+                        message = {
+                            type: 'image',
+                            originalContentUrl: document.getElementById('imageUrl').value || '[URL]',
+                            previewImageUrl: document.getElementById('imageThumbnail').value || '[URL]'
+                        };
+                        break;
+                    case 'video':
+                        message = {
+                            type: 'video',
+                            originalContentUrl: document.getElementById('videoUrl').value || '[URL]',
+                            previewImageUrl: document.getElementById('videoThumbnail').value || '[URL]'
+                        };
+                        break;
+                    case 'audio':
+                        message = {
+                            type: 'audio',
+                            originalContentUrl: document.getElementById('audioUrl').value || '[URL]',
+                            duration: parseInt(document.getElementById('audioDuration').value) || 0
+                        };
+                        break;
+                    case 'location':
+                        message = {
+                            type: 'location',
+                            title: document.getElementById('locationTitle').value || '[ชื่อ]',
+                            address: document.getElementById('locationAddress').value || '[ที่อยู่]',
+                            latitude: parseFloat(document.getElementById('locationLatitude').value) || 0,
+                            longitude: parseFloat(document.getElementById('locationLongitude').value) || 0
+                        };
+                        break;
+                    case 'template':
+                        const templateJson = document.getElementById('templateJson').value;
+                        message = templateJson ? JSON.parse(templateJson) : { type: 'template' };
+                        break;
+                    case 'flex':
+                        const flexJson = document.getElementById('flexJson').value;
+                        message = {
+                            type: 'flex',
+                            altText: 'Flex Message',
+                            contents: flexJson ? JSON.parse(flexJson) : { type: 'bubble' }
+                        };
+                        break;
+                }
+
+                messagePreview.textContent = JSON.stringify(message, null, 2);
+                messagePreview.dataset.message = JSON.stringify(message);
+            } catch (error) {
+                messagePreview.textContent = '❌ JSON ไม่ถูกต้อง: ' + error.message;
+                messagePreview.dataset.message = '';
+            }
+        }
+
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('change', updateMessagePreview);
+            input.addEventListener('input', updateMessagePreview);
+        });
+
+        // ========================================
+        // CRUD: CREATE (Save)
+        // ========================================
+        document.getElementById('saveBtn').addEventListener('click', async () => {
+            const messageType = messageTypeSelect.value;
+            if (!messageType) {
+                Swal.fire({ icon: 'warning', title: 'เลือกประเภท', text: 'กรุณาเลือกประเภท Message ก่อน' });
+                return;
+            }
+
+            const messageJson = messagePreview.dataset.message;
+            if (!messageJson) {
+                Swal.fire({ icon: 'error', title: 'ข้อมูลไม่สมบูรณ์', text: 'กรุณากรอกข้อมูล' });
+                return;
+            }
+
+            const saveBtn = document.getElementById('saveBtn');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = '⏳ กำลังบันทึก...';
+            saveBtn.disabled = true;
+
+            try {
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'create',
+                        messageType: messageType,
+                        messageData: messageJson,
+                        timestamp: new Date().toLocaleString('th-TH')
+                    })
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'บันทึกสำเร็จ!',
+                    text: 'Message ได้ถูกบันทึกแล้ว',
+                    timer: 2000
+                });
+
+                resetForm();
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'บันทึกไม่สำเร็จ', text: error.message });
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+
+        // ========================================
+        // CRUD: UPDATE
+        // ========================================
+        document.getElementById('updateBtn').addEventListener('click', async () => {
+            const id = document.getElementById('editingId').value;
+            if (!id) {
+                Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'ไม่พบ ID' });
+                return;
+            }
+
+            const messageType = messageTypeSelect.value;
+            const messageJson = messagePreview.dataset.message;
+
+            if (!messageJson) {
+                Swal.fire({ icon: 'error', title: 'ข้อมูลไม่สมบูรณ์' });
+                return;
+            }
+
+            const updateBtn = document.getElementById('updateBtn');
+            const originalText = updateBtn.textContent;
+            updateBtn.textContent = '⏳ กำลังอัปเดต...';
+            updateBtn.disabled = true;
+
+            try {
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'update',
+                        id: id,
+                        messageType: messageType,
+                        messageData: messageJson
+                    })
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'อัปเดตสำเร็จ!',
+                    timer: 2000
+                });
+
+                resetForm();
+                document.querySelector('.tab[data-tab="manage"]').click();
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'อัปเดตไม่สำเร็จ', text: error.message });
+            } finally {
+                updateBtn.textContent = originalText;
+                updateBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', resetForm);
+
+        function resetForm() {
+            document.getElementById('messageForm').reset();
+            document.getElementById('editingId').value = '';
+            document.querySelectorAll('[id$="Fields"]').forEach(el => el.classList.add('hidden'));
+            messagePreview.classList.add('hidden');
+            messagePreview.textContent = '';
+            messagePreview.dataset.message = '';
+            
+            document.getElementById('normalActions').classList.remove('hidden');
+            document.getElementById('editActions').classList.add('hidden');
+        }
+
+        // ========================================
+        // CRUD: READ
+        // ========================================
+        document.getElementById('refreshBtn').addEventListener('click', loadMessages);
+
+        async function loadMessages() {
+            const messageList = document.getElementById('messageList');
+            messageList.innerHTML = '<div class="loading-state"><div class="spinner"></div><p style="margin-top: 16px; color: var(--text-light);">กำลังโหลด...</p></div>';
+
+            try {
+                const url = GOOGLE_APPS_SCRIPT_URL + '?action=read';
+                const response = await fetch(url);
+                const messages = await response.json();
+                
+                allMessages = messages;
+                renderMessages(messages);
+            } catch (error) {
+                messageList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">⚠️</div>
+                        <p>ไม่สามารถโหลดข้อมูลได้</p>
+                        <p style="font-size: 12px; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderMessages(messages) {
+            const messageList = document.getElementById('messageList');
+            
+            if (!messages || messages.length === 0) {
+                messageList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">📭</div>
+                        <p>ยังไม่มีข้อความ</p>
+                        <p style="font-size: 12px; margin-top: 8px;">สร้างข้อความใหม่ที่แท็บ "สร้างใหม่"</p>
+                    </div>
+                `;
+                return;
+            }
+
+            messageList.innerHTML = messages.map(msg => {
+                const isSent = msg.sent === 'ใช่';
+                const messageDataTruncated = (msg.messageData || '').substring(0, 100) + 
+                    ((msg.messageData || '').length > 100 ? '...' : '');
+                
+                return `
+                    <div class="message-card" data-id="${msg.id}">
+                        <div class="message-card-header">
+                            <span class="message-type-badge">${msg.messageType}</span>
+                            <span class="message-status ${isSent ? 'sent' : ''}">
+                                ${isSent ? '✓ ส่งแล้ว' : '⏳ ยังไม่ส่ง'}
+                            </span>
+                        </div>
+                        <div class="message-time">📅 ${msg.timestamp}</div>
+                        <div class="message-data">${escapeHtml(messageDataTruncated)}</div>
+                        <div class="message-actions">
+                            <button class="btn-primary" onclick="resendMessage('${msg.id}')">✈️ ส่ง</button>
+                            <button class="btn-info" onclick="editMessage('${msg.id}')">✏️ แก้ไข</button>
+                            <button class="btn-danger" onclick="deleteMessageById('${msg.id}')">🗑️ ลบ</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ========================================
+        // CRUD: DELETE
+        // ========================================
+        async function deleteMessageById(id) {
+            const result = await Swal.fire({
+                icon: 'warning',
+                title: 'ยืนยันการลบ?',
+                text: 'ข้อมูลที่ลบไปจะไม่สามารถกู้คืนได้',
+                showCancelButton: true,
+                confirmButtonText: 'ลบ',
+                cancelButtonText: 'ยกเลิก',
+                confirmButtonColor: '#ea4335'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        id: id
+                    })
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ลบสำเร็จ!',
+                    timer: 1500
+                });
+
+                setTimeout(loadMessages, 500);
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'ลบไม่สำเร็จ', text: error.message });
+            }
+        }
+
+        // ========================================
+        // EDIT Message
+        // ========================================
+        function editMessage(id) {
+            const msg = allMessages.find(m => m.id === id);
+            if (!msg) {
+                Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล' });
+                return;
+            }
+
+            document.querySelector('.tab[data-tab="create"]').click();
+            document.getElementById('editingId').value = id;
+
+            messageTypeSelect.value = msg.messageType;
+            updateFieldVisibility(msg.messageType);
+
+            try {
+                const data = JSON.parse(msg.messageData);
+                
+                switch(msg.messageType) {
+                    case 'text':
+                        document.getElementById('textMessage').value = data.text || '';
+                        break;
+                    case 'sticker':
+                        document.getElementById('stickerId').value = data.stickerId || '';
+                        document.getElementById('packageId').value = data.packageId || '';
+                        break;
+                    case 'image':
+                        document.getElementById('imageUrl').value = data.originalContentUrl || '';
+                        document.getElementById('imageThumbnail').value = data.previewImageUrl || '';
+                        break;
+                    case 'video':
+                        document.getElementById('videoUrl').value = data.originalContentUrl || '';
+                        document.getElementById('videoThumbnail').value = data.previewImageUrl || '';
+                        break;
+                    case 'audio':
+                        document.getElementById('audioUrl').value = data.originalContentUrl || '';
+                        document.getElementById('audioDuration').value = data.duration || '';
+                        break;
+                    case 'location':
+                        document.getElementById('locationTitle').value = data.title || '';
+                        document.getElementById('locationAddress').value = data.address || '';
+                        document.getElementById('locationLatitude').value = data.latitude || '';
+                        document.getElementById('locationLongitude').value = data.longitude || '';
+                        break;
+                    case 'template':
+                        document.getElementById('templateJson').value = JSON.stringify(data);
+                        break;
+                    case 'flex':
+                        document.getElementById('flexJson').value = JSON.stringify(data.contents || {});
+                        break;
+                }
+
+                updateMessagePreview();
+
+                document.getElementById('normalActions').classList.add('hidden');
+                document.getElementById('editActions').classList.remove('hidden');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                Swal.fire({
+                    icon: 'info',
+                    title: 'โหมดแก้ไข',
+                    text: 'แก้ไขแล้วกด "อัปเดต"',
+                    timer: 2000
+                });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'ไม่สามารถแก้ไขได้', text: error.message });
+            }
+        }
+
+        // ========================================
+        // RESEND Message
+        // ========================================
+        async function resendMessage(id) {
+            const msg = allMessages.find(m => m.id === id);
+            if (!msg) {
+                Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล' });
+                return;
+            }
+
+            if (liffError || !liffInitialized || typeof liff === 'undefined') {
+                Swal.fire({ icon: 'error', title: 'LIFF ไม่พร้อมใช้งาน' });
+                return;
+            }
+
+            if (!liff.isLoggedIn()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ยังไม่ได้เข้าสู่ระบบ',
+                    showCancelButton: true,
+                    confirmButtonText: 'เข้าสู่ระบบ'
+                }).then(result => {
+                    if (result.isConfirmed) {
+                        liff.login({ redirectUri: window.location.href });
+                    }
+                });
+                return;
+            }
+
+            if (!liff.isApiAvailable('shareTargetPicker')) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'ไม่สามารถใช้ Share Target Picker',
+                    text: 'กรุณาเปิดใช้งานใน LINE Developers Console'
+                });
+                return;
+            }
+
+            try {
+                const message = JSON.parse(msg.messageData);
+                
+                liff.shareTargetPicker([message], {
+                    isMultiple: true
+                }).then(async (res) => {
+                    if (res) {
+                        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'markSent',
+                                id: id
+                            })
+                        });
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งสำเร็จ!',
+                            text: 'Message ถูกส่งไปแล้ว',
+                            timer: 2000
+                        });
+
+                        setTimeout(loadMessages, 500);
+                    } else {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'ยกเลิกการส่ง',
+                            timer: 1500
+                        });
+                    }
+                }).catch(err => {
+                    Swal.fire({ icon: 'error', title: 'ส่งไม่สำเร็จ', text: err.message });
+                });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
+            }
+        }
+
+        // ========================================
+        // SEND New Message
+        // ========================================
+        document.getElementById('sendBtn').addEventListener('click', async () => {
+            if (liffError) {
+                Swal.fire({ icon: 'error', title: 'ข้อผิดพลาด', text: 'LIFF ไม่ทำงาน' });
+                return;
+            }
+
+            if (!liffInitialized) {
+                Swal.fire({ icon: 'warning', title: 'กำลังเตรียมแอป', text: 'กรุณารอสักครู่...' });
+                return;
+            }
+
+            if (typeof liff === 'undefined') {
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'LIFF SDK ไม่พร้อม' });
+                return;
+            }
+
+            if (!liff.isLoggedIn()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'ยังไม่ได้เข้าสู่ระบบ',
+                    showCancelButton: true,
+                    confirmButtonText: 'เข้าสู่ระบบ'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        liff.login({ redirectUri: window.location.href });
+                    }
+                });
+                return;
+            }
+
+            const messageType = messageTypeSelect.value;
+            if (!messageType) {
+                Swal.fire({ icon: 'warning', title: 'เลือกประเภท Message ก่อน' });
+                return;
+            }
+
+            const messageJson = messagePreview.dataset.message;
+            if (!messageJson) {
+                Swal.fire({ icon: 'error', title: 'ข้อมูลไม่สมบูรณ์' });
+                return;
+            }
+
+            try {
+                const message = JSON.parse(messageJson);
+                
+                if (!liff.isApiAvailable('shareTargetPicker')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'ไม่สามารถใช้ Share Target Picker',
+                        text: 'กรุณาเปิดใช้งานใน LINE Developers Console'
+                    });
+                    return;
+                }
+                
+                liff.shareTargetPicker([message], {
+                    isMultiple: true
+                }).then(async (res) => {
+                    if (res) {
+                        await fetch(GOOGLE_APPS_SCRIPT_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'create',
+                                messageType: messageType,
+                                messageData: messageJson,
+                                timestamp: new Date().toLocaleString('th-TH'),
+                                sent: true
+                            })
+                        });
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'ส่งสำเร็จ!',
+                            text: 'Message ถูกส่งและบันทึกแล้ว',
+                            timer: 2000
+                        });
+
+                        resetForm();
+                    } else {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'ยกเลิกการส่ง',
+                            timer: 1500
+                        });
+                    }
+                }).catch(err => {
+                    Swal.fire({ icon: 'error', title: 'ส่งไม่สำเร็จ', text: err.message });
+                });
+            } catch (error) {
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: error.message });
+            }
+        });
+
+        // ========================================
+        // Download CSV
+        // ========================================
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            const downloadUrl = GOOGLE_APPS_SCRIPT_URL + '?action=downloadCSV';
+            
+            const link = document.createElement('a');
+            link.href = downloadUrl;
+            link.download = 'messages_' + new Date().getTime() + '.csv';
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            Swal.fire({
+                icon: 'success',
+                title: 'กำลังดาวน์โหลด!',
+                text: 'ไฟล์ CSV จะถูกดาวน์โหลดในไม่ช้า',
+                timer: 2000
+            });
+        });
+
+        // Make functions globally accessible
+        window.editMessage = editMessage;
+        window.deleteMessageById = deleteMessageById;
+        window.resendMessage = resendMessage;
+    </script>
+</body>
+</html>
